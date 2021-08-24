@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Books</title>
+</head>
+<body>
+  <h1>All books</h1>
+  <ul>
+    {{ range . }}
+    <li><a href="/books/{{ .Id }}">{{ .Name }}</a></li>
+    {{ endx }}
+  </ul>
+</body>
+</html>

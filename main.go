@@ -15,6 +15,13 @@ type Menu struct {
 	Price       int
 }
 
+type Book struct {
+	Id     int
+	Name   string
+	Author string
+	Price  float32
+}
+
 var menus = []Menu{
 	{
 		Id:          1,
@@ -33,6 +40,27 @@ var menus = []Menu{
 		Name:        "Jewel Meat",
 		Description: "Incandescent lamp-like radiance that dulls jewels and lights up a night sky",
 		Price:       8000,
+	},
+}
+
+var books = []Book{
+	{
+		Id:     1,
+		Name:   "jujutsu kaisen",
+		Author: "Akutami Gege",
+		Price:  80.00,
+	},
+	{
+		Id:     2,
+		Name:   "MY HERO ACADEMIA",
+		Author: "Kohei Horikoshi",
+		Price:  60.00,
+	},
+	{
+		Id:     3,
+		Name:   "Chainsaw Man",
+		Author: "Fujimoto Tatsuki",
+		Price:  80.00,
 	},
 }
 
@@ -66,6 +94,28 @@ func MenusHandler(w http.ResponseWriter, r *http.Request) {
 	menuTemplate.Execute(w, menus[menuIndex])
 }
 
+func AllBooksHandler(w http.ResponseWriter, r *http.Request) {
+	bookTemplate, err := template.ParseFiles("views/books/index.html")
+	if err != nil {
+		http.ServeFile(w, r, "public/500.html")
+		return
+	}
+	bookTemplate.Execute(w, books)
+}
+
+func BooksHandler(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	bookIndex, _ := strconv.ParseInt(params["id"], 0, 64)
+	bookIndex -= 1
+
+	bookTemplate, err := template.ParseFiles("views/books/show.html")
+	if err != nil || isOutOfRange(bookIndex) {
+		http.ServeFile(w, r, "public/500.html")
+		return
+	}
+	bookTemplate.Execute(w, books[bookIndex])
+}
+
 func isOutOfRange(index int64) bool {
 	return (index < 0 || index >= int64(len(menus)))
 }
@@ -75,15 +125,10 @@ func main() {
 	router.HandleFunc("/home", HomeHandler)
 	router.HandleFunc("/menus", AllMenusHandler)
 	router.HandleFunc("/menus/{id:[0-9]+}", MenusHandler)
-	// Please help implement one of following routing
-	// router.HandleFunc("/products", AllProductsHandler)
-	// router.HandleFunc("/products/{id:[0-9]+}", ProductsHandler)
-	// or
-	// router.HandleFunc("/books", AllBooksHandler)
-	// router.HandleFunc("/books/{id:[0-9]+}", BooksHandler)
-	// or
-	// router.HandleFunc("/songs", AllSongsHandler)
-	// router.HandleFunc("/songs/{id:[0-9]+}", SongsHandler)
+
+	router.HandleFunc("/books", AllBooksHandler)
+	router.HandleFunc("/books/{id:[0-9]+}", BooksHandler)
+
 	router.NotFoundHandler = http.HandlerFunc(NotFound)
 
 	http.Handle("/", router)
